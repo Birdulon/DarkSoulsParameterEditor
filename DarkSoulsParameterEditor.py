@@ -87,9 +87,73 @@ class DarkSoulsParameterEditor(QMainWindow):
             MEM = file1.read()
 
         #items = make_string_img_list(0x111380, 9, 256)
-        #magics = make_string_img_list(0x111C80, 6, 87)
+        """
+        We use some magic numbers here to find the string data.
+        Horribly crude but it does the job.
+        """
+        itemnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x60\x2F\x00\x00\x01\x00\x00\x00')
+        item_names = {k: v for (k, o, v) in itemnames_list}
         wepnames_list = make_strings(MEM, b'\x00\x00\x01\x00\xF0\xD7\x06\x00\x01\x00\x00\x00')
         weapon_names = {k: v for (k, o, v) in wepnames_list}
+        protnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x24\x14\x01\x00\x01\x00\x00\x00')
+        protector_names = {k: v for (k, o, v) in protnames_list}
+        accnames_list = make_strings(MEM, b'\x00\x00\x01\x00\xC8\x07\x00\x00\x01\x00\x00\x00')
+        accessory_names = {k: v for (k, o, v) in accnames_list}
+        magicnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x2C\x10\x00\x00\x01\x00\x00\x00')
+        magic_names = {k: v for (k, o, v) in magicnames_list}
+        npcnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x2C\x07\x00\x00\x01\x00\x00\x00')
+        npc_names = {k: v for (k, o, v) in npcnames_list}
+        zonenames_list = make_strings(MEM, b'\x00\x00\x01\x00\x5C\x08\x00\x00\x01\x00\x00\x00')
+        zone_names = {k: v for (k, o, v) in zonenames_list}
+        tooltips_list = make_strings(MEM, b'\x00\x00\x01\x00\xB4\x4B\x00\x00\x01\x00\x00\x00')
+        weptypes_list = make_strings(MEM, b'\x00\x00\x01\x00\xC8\xAA\x00\x00\x01\x00\x00\x00')
+        acctips_list = make_strings(MEM, b'\x00\x00\x01\x00\x14\x0B\x00\x00\x01\x00\x00\x00')
+        more_lists = [
+            make_strings(MEM, b'\x00\x00\x01\x00\xEC\xAD\x01\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x00\x4A\x09\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x88\x7E\x01\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x6C\x48\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x1C\x19\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\xB0\x7A\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            make_strings(MEM, b'\x00\x00\x01\x00\xDC\xC8\x03\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x60\x35\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x0B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x48\x6B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xF4\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\xA0\x89\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            make_strings(MEM, b'\x00\x00\x01\x00\x60\x56\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x80\x27\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x04\x47\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x6C\x17\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xD4\x0C\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xE8\x02\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\x10\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            #make_strings(MEM, b'\x00\x00\x01\x00\xC0\x49\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            make_strings(MEM, b'\x00\x00\x01\x00\xEC\x48\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xA0\x1C\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\x84\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            make_strings(MEM, b'\x00\x00\x01\x00\xD8\x04\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x24\x8E\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xC0\x1B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x76\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x0C\x0A\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\x84\x2F\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xF8\x04\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xA0\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x94\x00\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x58\x00\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xC4\x12\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xC0\x39\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\xD4\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x78\x12\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x18\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x2C\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x4C\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            make_strings(MEM, b'\x00\x00\x01\x00\x54\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
+            #make_strings(MEM, b'\x00\x00\x01\x00\xA0\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+            #make_strings(MEM, b'\x00\x00\x01\x00\x60\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
+        ]
 
         weapons = make_weapons(MEM)
 
@@ -101,19 +165,21 @@ class DarkSoulsParameterEditor(QMainWindow):
         editor_tab = QTabWidget()
         self.tabwidget.addTab(structs_tab, "Structs")
         self.tabwidget.addTab(strings_tab, "Strings")
-        #self.tabwidget.addTab(editor_tab, "Images")
-
-        #editor_tab.addTab(make_pixmap_table(glyph_sprites_en_small, scale=4), "Glyphs (EN)")
-        #editor_tab.addTab(make_pixmap_table(glyph_sprites_en_large, scale=2), "Glyphs (Dialogue EN)")
-        #editor_tab.addTab(make_pixmap_table(glyph_sprites_jp_small, scale=4), "Glyphs (JP)")
-        #editor_tab.addTab(make_pixmap_table(glyph_sprites_jp_large, scale=2), "Glyphs (Large JP)")
-        #editor_tab.addTab(make_pixmap_table(glyph_sprites_kanji, scale=2), "Glyphs (Kanji)")
-        #editor_tab.addTab(make_pixmap_table(self.battle_strips, cols=22, scale=2), "Character Battle Sprites")
-        #editor_tab.addTab(make_pixmap_table(status_strips, cols=22, scale=2), "Status Sprites")
-        #editor_tab.addTab(make_pixmap_table(enemy_sprites, scale=1), "Enemy Sprites")
+        #self.tabwidget.addTab(editor_tab, "Editors")
 
         structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
+        strings_tab.addTab(make_table(str_headers, itemnames_list), "Item Names")
         strings_tab.addTab(make_table(str_headers, wepnames_list), "Weapon Names")
+        strings_tab.addTab(make_table(str_headers, protnames_list), "Protector Names")
+        strings_tab.addTab(make_table(str_headers, accnames_list), "Accessory Names")
+        strings_tab.addTab(make_table(str_headers, magicnames_list), "Magic Names")
+        strings_tab.addTab(make_table(str_headers, npcnames_list), "NPC Names")
+        strings_tab.addTab(make_table(str_headers, zonenames_list), "Zone Names")
+        strings_tab.addTab(make_table(str_headers, tooltips_list), "Tooltips")
+        strings_tab.addTab(make_table(str_headers, weptypes_list), "Weapon Types")
+        strings_tab.addTab(make_table(str_headers, acctips_list), "Accessory Tooltips")
+        for i, lst in enumerate(more_lists):
+            strings_tab.addTab(make_table(str_headers, lst), str(i))
 
         layout = QHBoxLayout()
         layout.addWidget(self.tabwidget)
