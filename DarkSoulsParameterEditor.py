@@ -101,7 +101,7 @@ class DarkSoulsParameterEditor(QMainWindow):
             'Acc. Names':          mks(b'\xC8\x07\x00\x00'),
             'Magic Names':         mks(b'\x2C\x10\x00\x00'),
             'NPC Names':           mks(b'\x2C\x07\x00\x00'),
-            'Zone Names':          mks(b'\x5C\x08\x00\x00'),
+            'Game Area Names':     mks(b'\x5C\x08\x00\x00'),
             'Tooltips':            mks(b'\xB4\x4B\x00\x00'),
             'Weapon Types':        mks(b'\xC8\xAA\x00\x00'),
             'Acc. Tooltips':       mks(b'\x14\x0B\x00\x00'),
@@ -126,33 +126,39 @@ class DarkSoulsParameterEditor(QMainWindow):
             'unk2':                mks(b'\x10\x01\x00\x00', MAX_LEN=1024),  # Missing in old memdump
             'Main Menu':           mks(b'\xC0\x49\x00\x00', MAX_LEN=1024),  # Missing in old memdump
             'Goods Desc.':         mks(b'\xEC\x48\x00\x00', MAX_LEN=1024),
-            'DLC Messages':        mks(b'\xA0\x1C\x00\x00', MAX_LEN=1024),
+            'Messages DLC':        mks(b'\xA0\x1C\x00\x00', MAX_LEN=1024),
             'unk3':                mks(b'\x84\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
             'unk4':                mks(b'\xD8\x04\x00\x00', MAX_LEN=1024),
-            'DLC Subtitles':       mks(b'\x24\x8E\x00\x00', MAX_LEN=1024),
-            'DLC Magic Desc.':     mks(b'\xC0\x1B\x00\x00', MAX_LEN=1024),
-            'DLC Weapon Desc.':    mks(b'\xCC\x76\x00\x00', MAX_LEN=1024),
+            'Subtitles DLC':       mks(b'\x24\x8E\x00\x00', MAX_LEN=1024),
+            'Magic Desc. DLC':     mks(b'\xC0\x1B\x00\x00', MAX_LEN=1024),
+            'Weapon Desc. DLC':    mks(b'\xCC\x76\x00\x00', MAX_LEN=1024),
             'DLC Arena':           mks(b'\x0C\x0A\x00\x00', MAX_LEN=1024),
-            'DLC Protector Desc.': mks(b'\x84\x2F\x00\x00', MAX_LEN=1024),  # Missing in old memdump
-            'DLC Acc. Desc.':      mks(b'\xCC\x03\x00\x00', MAX_LEN=1024),
-            'DLC Goods Tooltips':  mks(b'\xF8\x04\x00\x00', MAX_LEN=1024),
-            'DLC Goods Names':     mks(b'\xA0\x03\x00\x00', MAX_LEN=1024),
-            'DLC Acc. Tooltip':    mks(b'\x94\x00\x00\x00', MAX_LEN=1024),
-            'DLC Acc. Name.':      mks(b'\x58\x00\x00\x00', MAX_LEN=1024),
-            'DLC Weapon Types':    mks(b'\xC4\x12\x00\x00', MAX_LEN=1024),
-            'DLC Weapon Names':    mks(b'\xC0\x39\x00\x00', MAX_LEN=1024),
+            'Protector Desc. DLC': mks(b'\x84\x2F\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'Acc. Desc. DLC':      mks(b'\xCC\x03\x00\x00', MAX_LEN=1024),
+            'Goods Tooltips DLC':  mks(b'\xF8\x04\x00\x00', MAX_LEN=1024),
+            'Goods Names DLC':     mks(b'\xA0\x03\x00\x00', MAX_LEN=1024),
+            'Acc. Tooltips DLC':   mks(b'\x94\x00\x00\x00', MAX_LEN=1024),
+            'Acc. Names DLC':      mks(b'\x58\x00\x00\x00', MAX_LEN=1024),
+            'Weapon Types DLC':    mks(b'\xC4\x12\x00\x00', MAX_LEN=1024),
+            'Weapon Names DLC':    mks(b'\xC0\x39\x00\x00', MAX_LEN=1024),
             #'unk5':        mks(b'\xD4\x01\x00\x00', MAX_LEN=1024),  # Empty
-            'DLC Protector Names': mks(b'\x78\x12\x00\x00', MAX_LEN=1024),
-            'DLC Magic Names':     mks(b'\x18\x01\x00\x00', MAX_LEN=1024),
-            'DLC Boss Names':      mks(b'\x2C\x01\x00\x00', MAX_LEN=1024),
-            'DLC Zone Names':      mks(b'\x4C\x03\x00\x00', MAX_LEN=1024),
+            'Protector Names DLC': mks(b'\x78\x12\x00\x00', MAX_LEN=1024),
+            'Magic Names DLC':     mks(b'\x18\x01\x00\x00', MAX_LEN=1024),
+            'Boss Names DLC':      mks(b'\x2C\x01\x00\x00', MAX_LEN=1024),
+            'Game Area Names DLC': mks(b'\x4C\x03\x00\x00', MAX_LEN=1024),
             'unk6':                mks(b'\x54\x07\x00\x00', MAX_LEN=1024),
             'unk7':                mks(b'\xA0\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
             'unk8':                mks(b'\x60\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
         }
-        weapon_names = {k: v for (k, o, v) in string_lists['Weapon Names']}
+        weapon_names = {k: v for (k, o, v) in string_lists['Weapon Names'] + string_lists['Weapon Names DLC']}
 
         weapons = make_weapons(MEM)
+        param_lists = {}
+        for k, v in structs.structs.items():
+            try:
+                param_lists[k] = make_struct(MEM, k, v)
+            except BaseException as e:
+                print(e)
 
         str_headers = ['ID', 'Offset', 'String']
 
@@ -165,7 +171,9 @@ class DarkSoulsParameterEditor(QMainWindow):
         #self.tabwidget.addTab(editor_tab, "Editors")
 
         structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
-        for name, lst in string_lists.items():
+        for name, lst in sorted(param_lists.items()):
+            structs_tab.addTab(make_param_table(lst), name)
+        for name, lst in sorted(string_lists.items()):
             strings_tab.addTab(make_table(str_headers, lst), name)
 
         layout = QHBoxLayout()
@@ -198,6 +206,26 @@ def make_weapons(memory):
     params = []
     for i in range(off_start, off_start+(size*num_structs), size):
         params.append(structs.EQUIP_PARAM_WEAPON_ST.from_buffer_copy(memory[i:i+size]))
+    return list(zip(ids, params))
+
+
+def make_struct(memory, string, cls):
+    """
+    Try same as weapon param structs
+    """
+    idx = memory.find(string.encode('utf_8'))
+    if idx < 0:
+        raise ValueError(string+' Params not found.')
+    num_structs = int.from_bytes(memory[idx-2:idx], 'little')
+    start = idx + 0x24
+    off_start = start + 12*num_structs
+    size = ctypes.sizeof(cls)
+    ids = []
+    for i in range(start, start+(12*num_structs), 12):
+        ids.append(struct.unpack('III', memory[i:i+12]))
+    params = []
+    for i in range(off_start, off_start+(size*num_structs), size):
+        params.append(cls.from_buffer_copy(memory[i:i+size]))
     return list(zip(ids, params))
 
 
@@ -279,7 +307,20 @@ def make_table(headers, items, sortable=False, row_labels=True, scale=2):
     return table
 
 
-def make_param_table(items, IDs=None, sortable=False, row_labels=True, scale=2):
+INT_TYPES = (
+    int,
+    ctypes.c_int8,
+    ctypes.c_int16,
+    ctypes.c_int32,
+    ctypes.c_int64,
+    ctypes.c_uint8,
+    ctypes.c_uint16,
+    ctypes.c_uint32,
+    ctypes.c_uint64,
+    )
+
+
+def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
     """
     Helper function to tabulate 2d lists
     """
@@ -300,7 +341,9 @@ def make_param_table(items, IDs=None, sortable=False, row_labels=True, scale=2):
     table.setHorizontalHeaderLabels(headers)
     for row, item in enumerate(items):
         for col, val in enumerate(item[0]):
-            table.setItem(row, col, QTableWidgetItem(str(val)))
+            q_item = QTableWidgetItem()
+            q_item.setData(QtCore.Qt.DisplayRole, val)
+            table.setItem(row, col, q_item)
         if IDs:
             table.setItem(row, 3, QTableWidgetItem(str(IDs.get(item[0][0], ''))))
         for col, value in [(i+reserved_cols, getattr(item[1], fields[i])) for i in range(len(fields))]:
@@ -309,7 +352,13 @@ def make_param_table(items, IDs=None, sortable=False, row_labels=True, scale=2):
                 lab.setPixmap(value.scaled(value.size() * scale))
                 table.setCellWidget(row, col, lab)
             elif isinstance(value, (float, ctypes.c_float)):
-                q_item = QTableWidgetItem("{0:.2f}".format(value))
+                #q_item = QTableWidgetItem("{0:.2f}".format(value))
+                q_item = QTableWidgetItem()
+                q_item.setData(QtCore.Qt.DisplayRole, float(value))
+                table.setItem(row, col, q_item)
+            elif isinstance(value, INT_TYPES):
+                q_item = QTableWidgetItem()
+                q_item.setData(QtCore.Qt.DisplayRole, int(value))
                 table.setItem(row, col, q_item)
             elif value is not None:
                 q_item = QTableWidgetItem(str(value))
