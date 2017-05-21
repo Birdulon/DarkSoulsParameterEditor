@@ -88,8 +88,10 @@ class DarkSoulsParameterEditor(QMainWindow):
 
         #items = make_string_img_list(0x111380, 9, 256)
         #magics = make_string_img_list(0x111C80, 6, 87)
+        wepnames_list = make_strings(MEM, b'\x00\x00\x01\x00\xF0\xD7\x06\x00\x01\x00\x00\x00')
+        weapon_names = {k: v for (k, o, v) in wepnames_list}
+
         weapons = make_weapons(MEM)
-        wepnames = make_strings(MEM, b'\x00\x00\x01\x00\xF0\xD7\x06\x00\x01\x00\x00\x00')
 
         str_headers = ['ID', 'Offset', 'String']
 
@@ -110,8 +112,8 @@ class DarkSoulsParameterEditor(QMainWindow):
         #editor_tab.addTab(make_pixmap_table(status_strips, cols=22, scale=2), "Status Sprites")
         #editor_tab.addTab(make_pixmap_table(enemy_sprites, scale=1), "Enemy Sprites")
 
-        structs_tab.addTab(make_param_table(weapons), "Weapons")
-        strings_tab.addTab(make_table(str_headers, wepnames), "Weapon Names")
+        structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
+        strings_tab.addTab(make_table(str_headers, wepnames_list), "Weapon Names")
 
         layout = QHBoxLayout()
         layout.addWidget(self.tabwidget)
@@ -149,8 +151,7 @@ def make_weapons(memory):
     return weapons
 
 
-def make_strings(memory, header):
-    MAX_LEN = 64
+def make_strings(memory, header, MAX_LEN=64):
     idx = memory.find(header)
     if idx < 0:
         raise ValueError('Header not found.')
@@ -228,12 +229,16 @@ def make_table(headers, items, sortable=False, row_labels=True, scale=2):
     return table
 
 
-def make_param_table(items, sortable=False, row_labels=True, scale=2):
+def make_param_table(items, IDs=None, sortable=False, row_labels=True, scale=2):
     """
     Helper function to tabulate 2d lists
     """
     fields = [f[0] for f in items[0][1]._fields_]
-    headers = ['ID'] + fields
+    id_header = ['ID', 'ST Offset', 'OldNameOffset']
+    if IDs:
+        id_header.append('Name')
+    headers = id_header + fields
+    reserved_cols = len(id_header)
     cols = len(headers)
     rows = len(items)
     rd = hex_length(rows-1)
@@ -244,12 +249,18 @@ def make_param_table(items, sortable=False, row_labels=True, scale=2):
         table.verticalHeader().setVisible(False)
     table.setHorizontalHeaderLabels(headers)
     for row, item in enumerate(items):
-        table.setItem(row, 0, QTableWidgetItem(str(item[0])))
-        for col, value in [(i+1, getattr(item[1], fields[i])) for i in range(len(fields))]:
+        for col, val in enumerate(item[0]):
+            table.setItem(row, col, QTableWidgetItem(str(val)))
+        if IDs:
+            table.setItem(row, 3, QTableWidgetItem(str(IDs.get(item[0][0], ''))))
+        for col, value in [(i+reserved_cols, getattr(item[1], fields[i])) for i in range(len(fields))]:
             if isinstance(value, QPixmap):
                 lab = QLabel()
                 lab.setPixmap(value.scaled(value.size() * scale))
                 table.setCellWidget(row, col, lab)
+            elif isinstance(value, (float, ctypes.c_float)):
+                q_item = QTableWidgetItem("{0:.2f}".format(value))
+                table.setItem(row, col, q_item)
             elif value is not None:
                 q_item = QTableWidgetItem(str(value))
                 #if item[:2] == "0x":
@@ -260,6 +271,7 @@ def make_param_table(items, sortable=False, row_labels=True, scale=2):
         table.setSortingEnabled(True)
         table.sortItems(0)
     return table
+
 
 def main():
     app = QApplication(sys.argv)
