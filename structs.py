@@ -173,7 +173,7 @@ class ENV_LIGHT_TEX_BANK(Structure):
     _fields_ = [
         ('isUse', c_int8),
         ('autoUpdate', c_int8),
-        ('pad_0[12]', c_uint8),
+        ('pad_0', c_uint8 * 12),
         ('invMulCol', c_int16),
         ('resNameId_Dif0', c_int16),
         ('invMulCol_Dif0', c_int16),
