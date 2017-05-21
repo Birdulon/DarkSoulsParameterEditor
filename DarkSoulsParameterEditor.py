@@ -14,7 +14,7 @@ import structs
 
 pyqt_version = 0
 skip_pyqt5 = "PYQT4" in os.environ
-filename = "DaS memory.m0000"
+filename = "DarkSoulsDump.m0000"
 
 if not skip_pyqt5:
     try:
@@ -91,69 +91,66 @@ class DarkSoulsParameterEditor(QMainWindow):
         We use some magic numbers here to find the string data.
         Horribly crude but it does the job.
         """
-        itemnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x60\x2F\x00\x00\x01\x00\x00\x00')
-        item_names = {k: v for (k, o, v) in itemnames_list}
-        wepnames_list = make_strings(MEM, b'\x00\x00\x01\x00\xF0\xD7\x06\x00\x01\x00\x00\x00')
-        weapon_names = {k: v for (k, o, v) in wepnames_list}
-        protnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x24\x14\x01\x00\x01\x00\x00\x00')
-        protector_names = {k: v for (k, o, v) in protnames_list}
-        accnames_list = make_strings(MEM, b'\x00\x00\x01\x00\xC8\x07\x00\x00\x01\x00\x00\x00')
-        accessory_names = {k: v for (k, o, v) in accnames_list}
-        magicnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x2C\x10\x00\x00\x01\x00\x00\x00')
-        magic_names = {k: v for (k, o, v) in magicnames_list}
-        npcnames_list = make_strings(MEM, b'\x00\x00\x01\x00\x2C\x07\x00\x00\x01\x00\x00\x00')
-        npc_names = {k: v for (k, o, v) in npcnames_list}
-        zonenames_list = make_strings(MEM, b'\x00\x00\x01\x00\x5C\x08\x00\x00\x01\x00\x00\x00')
-        zone_names = {k: v for (k, o, v) in zonenames_list}
-        tooltips_list = make_strings(MEM, b'\x00\x00\x01\x00\xB4\x4B\x00\x00\x01\x00\x00\x00')
-        weptypes_list = make_strings(MEM, b'\x00\x00\x01\x00\xC8\xAA\x00\x00\x01\x00\x00\x00')
-        acctips_list = make_strings(MEM, b'\x00\x00\x01\x00\x14\x0B\x00\x00\x01\x00\x00\x00')
-        more_lists = [
-            make_strings(MEM, b'\x00\x00\x01\x00\xEC\xAD\x01\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x00\x4A\x09\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x88\x7E\x01\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x6C\x48\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x1C\x19\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\xB0\x7A\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            make_strings(MEM, b'\x00\x00\x01\x00\xDC\xC8\x03\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x60\x35\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x0B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x48\x6B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xF4\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\xA0\x89\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            make_strings(MEM, b'\x00\x00\x01\x00\x60\x56\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x80\x27\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x04\x47\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x6C\x17\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xD4\x0C\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xE8\x02\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\x10\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            #make_strings(MEM, b'\x00\x00\x01\x00\xC0\x49\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            make_strings(MEM, b'\x00\x00\x01\x00\xEC\x48\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xA0\x1C\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\x84\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            make_strings(MEM, b'\x00\x00\x01\x00\xD8\x04\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x24\x8E\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xC0\x1B\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x76\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x0C\x0A\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\x84\x2F\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            make_strings(MEM, b'\x00\x00\x01\x00\xCC\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xF8\x04\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xA0\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x94\x00\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x58\x00\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xC4\x12\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xC0\x39\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\xD4\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x78\x12\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x18\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x2C\x01\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x4C\x03\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            make_strings(MEM, b'\x00\x00\x01\x00\x54\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024),
-            #make_strings(MEM, b'\x00\x00\x01\x00\xA0\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-            #make_strings(MEM, b'\x00\x00\x01\x00\x60\x07\x00\x00\x01\x00\x00\x00', MAX_LEN=1024), # Missing in old memdump
-        ]
+        def mks(pattern, **kwargs):
+            return make_strings(MEM, b'\x00\x00\x01\x00' + pattern + b'\x01\x00\x00\x00', **kwargs)
+
+        string_lists = {
+            'Goods Names':         mks(b'\x60\x2F\x00\x00'),
+            'Weapon Names':        mks(b'\xF0\xD7\x06\x00'),
+            'Protector Names':     mks(b'\x24\x14\x01\x00'),
+            'Acc. Names':          mks(b'\xC8\x07\x00\x00'),
+            'Magic Names':         mks(b'\x2C\x10\x00\x00'),
+            'NPC Names':           mks(b'\x2C\x07\x00\x00'),
+            'Zone Names':          mks(b'\x5C\x08\x00\x00'),
+            'Tooltips':            mks(b'\xB4\x4B\x00\x00'),
+            'Weapon Types':        mks(b'\xC8\xAA\x00\x00'),
+            'Acc. Tooltips':       mks(b'\x14\x0B\x00\x00'),
+            'Goods Desc.':         mks(b'\xEC\xAD\x01\x00', MAX_LEN=1024),
+            'Weapon Desc.':        mks(b'\x00\x4A\x09\x00', MAX_LEN=1024),
+            'Protector Desc.':     mks(b'\x88\x7E\x01\x00', MAX_LEN=1024),
+            'Acc. Desc.':          mks(b'\x6C\x48\x00\x00', MAX_LEN=1024),
+            'Magic Tooltips':      mks(b'\x1C\x19\x00\x00', MAX_LEN=1024),
+            'Magic Desc.':         mks(b'\xB0\x7A\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'Subtitles':           mks(b'\xDC\xC8\x03\x00', MAX_LEN=1024),
+            'Signs':               mks(b'\x60\x35\x00\x00', MAX_LEN=1024),
+            'Intro Subs':          mks(b'\xCC\x0B\x00\x00', MAX_LEN=1024),
+            'UI Messages':         mks(b'\x48\x6B\x00\x00', MAX_LEN=1024),
+            'UI Labels':           mks(b'\xF4\x07\x00\x00', MAX_LEN=1024),
+            'Misc. Tooltips':      mks(b'\xA0\x89\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'Character Creation':  mks(b'\x60\x56\x00\x00', MAX_LEN=1024),
+            'UI Messages 2':       mks(b'\x80\x27\x00\x00', MAX_LEN=1024),
+            'unk':                 mks(b'\x04\x47\x00\x00', MAX_LEN=1024),
+            'UI Labels 2':         mks(b'\x6C\x17\x00\x00', MAX_LEN=1024),
+            'Moon':                mks(b'\xD4\x0C\x00\x00', MAX_LEN=1024),
+            'unk1':                mks(b'\xE8\x02\x00\x00', MAX_LEN=1024),
+            'unk2':                mks(b'\x10\x01\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'Main Menu':           mks(b'\xC0\x49\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'Goods Desc.':         mks(b'\xEC\x48\x00\x00', MAX_LEN=1024),
+            'DLC Messages':        mks(b'\xA0\x1C\x00\x00', MAX_LEN=1024),
+            'unk3':                mks(b'\x84\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'unk4':                mks(b'\xD8\x04\x00\x00', MAX_LEN=1024),
+            'DLC Subtitles':       mks(b'\x24\x8E\x00\x00', MAX_LEN=1024),
+            'DLC Magic Desc.':     mks(b'\xC0\x1B\x00\x00', MAX_LEN=1024),
+            'DLC Weapon Desc.':    mks(b'\xCC\x76\x00\x00', MAX_LEN=1024),
+            'DLC Arena':           mks(b'\x0C\x0A\x00\x00', MAX_LEN=1024),
+            'DLC Protector Desc.': mks(b'\x84\x2F\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'DLC Acc. Desc.':      mks(b'\xCC\x03\x00\x00', MAX_LEN=1024),
+            'DLC Goods Tooltips':  mks(b'\xF8\x04\x00\x00', MAX_LEN=1024),
+            'DLC Goods Names':     mks(b'\xA0\x03\x00\x00', MAX_LEN=1024),
+            'DLC Acc. Tooltip':    mks(b'\x94\x00\x00\x00', MAX_LEN=1024),
+            'DLC Acc. Name.':      mks(b'\x58\x00\x00\x00', MAX_LEN=1024),
+            'DLC Weapon Types':    mks(b'\xC4\x12\x00\x00', MAX_LEN=1024),
+            'DLC Weapon Names':    mks(b'\xC0\x39\x00\x00', MAX_LEN=1024),
+            #'unk5':        mks(b'\xD4\x01\x00\x00', MAX_LEN=1024),  # Empty
+            'DLC Protector Names': mks(b'\x78\x12\x00\x00', MAX_LEN=1024),
+            'DLC Magic Names':     mks(b'\x18\x01\x00\x00', MAX_LEN=1024),
+            'DLC Boss Names':      mks(b'\x2C\x01\x00\x00', MAX_LEN=1024),
+            'DLC Zone Names':      mks(b'\x4C\x03\x00\x00', MAX_LEN=1024),
+            'unk6':                mks(b'\x54\x07\x00\x00', MAX_LEN=1024),
+            'unk7':                mks(b'\xA0\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+            'unk8':                mks(b'\x60\x07\x00\x00', MAX_LEN=1024),  # Missing in old memdump
+        }
+        weapon_names = {k: v for (k, o, v) in string_lists['Weapon Names']}
 
         weapons = make_weapons(MEM)
 
@@ -168,18 +165,8 @@ class DarkSoulsParameterEditor(QMainWindow):
         #self.tabwidget.addTab(editor_tab, "Editors")
 
         structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
-        strings_tab.addTab(make_table(str_headers, itemnames_list), "Item Names")
-        strings_tab.addTab(make_table(str_headers, wepnames_list), "Weapon Names")
-        strings_tab.addTab(make_table(str_headers, protnames_list), "Protector Names")
-        strings_tab.addTab(make_table(str_headers, accnames_list), "Accessory Names")
-        strings_tab.addTab(make_table(str_headers, magicnames_list), "Magic Names")
-        strings_tab.addTab(make_table(str_headers, npcnames_list), "NPC Names")
-        strings_tab.addTab(make_table(str_headers, zonenames_list), "Zone Names")
-        strings_tab.addTab(make_table(str_headers, tooltips_list), "Tooltips")
-        strings_tab.addTab(make_table(str_headers, weptypes_list), "Weapon Types")
-        strings_tab.addTab(make_table(str_headers, acctips_list), "Accessory Tooltips")
-        for i, lst in enumerate(more_lists):
-            strings_tab.addTab(make_table(str_headers, lst), str(i))
+        for name, lst in string_lists.items():
+            strings_tab.addTab(make_table(str_headers, lst), name)
 
         layout = QHBoxLayout()
         layout.addWidget(self.tabwidget)
@@ -193,28 +180,25 @@ class DarkSoulsParameterEditor(QMainWindow):
 def make_weapons(memory):
     """
     Weapon param structs
-    "EquipParamWeapon" in UTF-16
-    42 bytes after that, (u?)int16 holds number of entries
+    (u?)int16 holds number of entries
     After that, "EQUIP_PARAM_WEAPON_ST" in UTF-8
-    14 bytes after null terminator, ID of first entry (uint32) followed by offset to struct (uint32) and 4 unk bytes (name id?)
+    14 bytes after null terminator, ID of first entry (uint32) followed by offset to struct (uint32) and 4 unk bytes (old name id?)
     repeat 12 byte struct for all entries
     """
-    idx = memory.find("EquipParamWeapon".encode('utf_16_le'))
+    idx = memory.find("EQUIP_PARAM_WEAPON_ST".encode('utf_8'))
     if idx < 0:
         raise ValueError('Weapon params not found.')
-    num_structs = int.from_bytes(memory[idx+74:idx+76], 'little')
-    start = idx + 112
+    num_structs = int.from_bytes(memory[idx-2:idx], 'little')
+    start = idx + 0x24
+    off_start = start + 12*num_structs
     size = ctypes.sizeof(structs.EQUIP_PARAM_WEAPON_ST)
     ids = []
     for i in range(start, start+(12*num_structs), 12):
         ids.append(struct.unpack('III', memory[i:i+12]))
-    start = i + 12
     params = []
-    for i in range(start, start+(size*num_structs), size):
+    for i in range(off_start, off_start+(size*num_structs), size):
         params.append(structs.EQUIP_PARAM_WEAPON_ST.from_buffer_copy(memory[i:i+size]))
-
-    weapons = [(ids[i], params[i]) for i in range(num_structs)]
-    return weapons
+    return list(zip(ids, params))
 
 
 def make_strings(memory, header, MAX_LEN=64):
