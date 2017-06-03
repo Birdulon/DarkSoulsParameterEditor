@@ -162,6 +162,7 @@ class DarkSoulsParameterEditor(QMainWindow):
     """
     def __init__(self):
         QMainWindow.__init__(self, None)
+        self.setWindowTitle("Dark Souls Parameter Editor")
 
         file1 = open(filename, 'rb')
         MEM = file1.read()
