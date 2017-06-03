@@ -168,7 +168,7 @@ class DarkSoulsParameterEditor(QMainWindow):
                 i += match.end() + 2
         print('String matches done')
 
-        weapon_names = {k: v for (k, o, v) in itertools.chain(string_lists['Weapon Names'], string_lists['Weapon Names DLC'])}
+        #weapon_names = {k: v for (k, o, v) in itertools.chain(string_lists['Weapon Names'], string_lists['Weapon Names DLC'])}
 
         #weapons = make_struct(MEMv, 'EQUIP_PARAM_WEAPON_ST', structs.EQUIP_PARAM_WEAPON_ST)
         param_lists = {}
@@ -183,11 +183,9 @@ class DarkSoulsParameterEditor(QMainWindow):
             result = make_struct(MEMv[i+match.start()-2:], structs.structs[match.group(0)])
             key = str(match.group(0), 'utf8').rstrip('\x00 ')
             if key in param_lists:
-                j = 1
-                while '{} {:02}'.format(key, j) in param_lists:
-                    j += 1
-                key = '{} {:02}'.format(key, j)
-            param_lists[key] = result[0]
+                param_lists[key] += [result[0]]
+            else:
+                param_lists[key] = [result[0]]
             i += match.start() + result[1] - 2
             print(result[1])
         print('Struct matches done')
@@ -204,9 +202,15 @@ class DarkSoulsParameterEditor(QMainWindow):
 
         #structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
         for name, lst in sorted(param_lists.items()):
-            structs_tab.addTab(make_param_table(list(lst)), name)
+            if len(lst) > 1:
+                sub_tab = QTabWidget()
+                structs_tab.addTab(sub_tab, name)
+                for i, sub in enumerate(lst):
+                    sub_tab.addTab(make_param_table(sub), str(i))
+            else:
+                structs_tab.addTab(make_param_table(lst[0]), name)
         for name, lst in sorted(string_lists.items()):
-            strings_tab.addTab(make_table(str_headers, list(lst)), name)
+            strings_tab.addTab(make_table(str_headers, lst), name)
 
         layout = QHBoxLayout()
         layout.addWidget(self.tabwidget)
@@ -291,6 +295,8 @@ def make_table(headers, items, sortable=False, row_labels=True, scale=2):
     Helper function to tabulate 2d lists
     """
     cols = len(headers)
+    if not isinstance(items, list):
+        items = list(items)
     rows = len(items)
     rd = hex_length(rows-1)
     table = QTableWidget(rows, cols)
@@ -335,6 +341,8 @@ def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
     """
     Helper function to tabulate 2d lists
     """
+    if not isinstance(items, list):
+        items = list(items)
     fields = [f[0] for f in items[0][1]._fields_]
     id_header = ['ID', 'ST Offset', 'OldNameOffset']
     if IDs:
