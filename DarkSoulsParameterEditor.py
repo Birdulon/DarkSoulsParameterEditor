@@ -25,9 +25,11 @@ if not skip_pyqt5:
         from PyQt5.QtWidgets import (
             QApplication, QMainWindow, QFormLayout,
             QGridLayout, QHBoxLayout, QVBoxLayout,
-            QAbstractItemView, QHeaderView, QListWidget,
-            QListWidgetItem, QTabWidget, QTableWidget,
-            QTableWidgetItem, QFrame, QScrollArea,
+            QAbstractItemView, QHeaderView,
+            QListWidget, QListWidgetItem,
+            QTableWidget, QTableWidgetItem,
+            QTreeWidget, QTreeWidgetItem,
+            QFrame, QScrollArea, QTabWidget,
             QStackedWidget, QWidget, QCheckBox, QComboBox,
             QDoubleSpinBox, QGroupBox, QLineEdit,
             QPushButton, QRadioButton, QSpinBox,
@@ -49,9 +51,11 @@ if pyqt_version == 0:
         from PyQt4.QtGui import (
             QApplication, QMainWindow, QFormLayout,
             QGridLayout, QHBoxLayout, QVBoxLayout,
-            QAbstractItemView, QHeaderView, QListWidget,
-            QListWidgetItem, QTabWidget, QTableWidget,
-            QTableWidgetItem, QFrame, QScrollArea,
+            QAbstractItemView, QHeaderView,
+            QListWidget, QListWidgetItem,
+            QTableWidget, QTableWidgetItem,
+            QTreeWidget, QTreeWidgetItem,
+            QFrame, QScrollArea, QTabWidget,
             QStackedWidget, QWidget, QCheckBox,
             QComboBox, QDoubleSpinBox, QGroupBox,
             QLineEdit, QPushButton, QRadioButton,
@@ -70,6 +74,80 @@ if pyqt_version == 0:
               "Make sure you installed the PyQt4 package.")
         sys.exit(-1)
 
+"""
+We use some magic numbers to find the string data.
+Horribly crude but it does the job.
+"""
+STRING_LIST_KEYS = {
+    b'\x60\x2F\x00': 'Goods Names',
+    b'\xF0\xD7\x06': 'Weapon Names',
+    b'\x24\x14\x01': 'Protector Names',
+    b'\xC8\x07\x00': 'Acc. Names',
+    b'\x2C\x10\x00': 'Magic Names',
+    b'\x2C\x07\x00': 'NPC Names',
+    b'\x5C\x08\x00': 'Game Area Names',
+    b'\xB4\x4B\x00': 'Tooltips',
+    b'\xC8\xAA\x00': 'Weapon Types',
+    b'\x14\x0B\x00': 'Acc. Tooltips',
+    b'\xEC\xAD\x01': 'Goods Desc.',
+    b'\x00\x4A\x09': 'Weapon Desc.',
+    b'\x88\x7E\x01': 'Protector Desc.',
+    b'\x6C\x48\x00': 'Acc. Desc.',
+    b'\x1C\x19\x00': 'Magic Tooltips',
+    b'\xB0\x7A\x00': 'Magic Desc.',          # Missing in old memdump
+    b'\xDC\xC8\x03': 'Subtitles',
+    b'\x60\x35\x00': 'Signs',
+    b'\xCC\x0B\x00': 'Intro Subs',
+    b'\x48\x6B\x00': 'UI Messages',
+    b'\xF4\x07\x00': 'UI Labels',
+    b'\xA0\x89\x00': 'Misc. Tooltips',       # Missing in old memdump
+    b'\x60\x56\x00': 'Character Creation',
+    b'\x80\x27\x00': 'UI Messages 2',
+    b'\x04\x47\x00': 'unk',
+    b'\x6C\x17\x00': 'UI Labels 2',
+    b'\xD4\x0C\x00': 'Moon',
+    b'\xE8\x02\x00': 'unk1',
+    b'\x10\x01\x00': 'unk2',                 # Missing in old memdump
+    b'\xC0\x49\x00': 'Main Menu',            # Missing in old memdump
+    b'\xEC\x48\x00': 'Goods Desc.',
+    b'\xA0\x1C\x00': 'Messages DLC',
+    b'\x84\x07\x00': 'unk3',                 # Missing in old memdump
+    b'\xD8\x04\x00': 'unk4',
+    b'\x24\x8E\x00': 'Subtitles DLC',
+    b'\xC0\x1B\x00': 'Magic Desc. DLC',
+    b'\xCC\x76\x00': 'Weapon Desc. DLC',
+    b'\x0C\x0A\x00': 'DLC Arena',
+    b'\x84\x2F\x00': 'Protector Desc. DLC',  # Missing in old memdump
+    b'\xCC\x03\x00': 'Acc. Desc. DLC',
+    b'\xF8\x04\x00': 'Goods Tooltips DLC',
+    b'\xA0\x03\x00': 'Goods Names DLC',
+    b'\x94\x00\x00': 'Acc. Tooltips DLC',
+    b'\x58\x00\x00': 'Acc. Names DLC',
+    b'\xC4\x12\x00': 'Weapon Types DLC',
+    b'\xC0\x39\x00': 'Weapon Names DLC',
+    #'unk5':        mks(b'\xD4\x01\x00', MAX_LEN=1024),  # Empty
+    b'\x78\x12\x00': 'Protector Names DLC',
+    b'\x18\x01\x00': 'Magic Names DLC',
+    b'\x2C\x01\x00': 'Boss Names DLC',
+    b'\x4C\x03\x00': 'Game Area Names DLC',
+    b'\x54\x07\x00': 'unk6',
+    b'\xA0\x07\x00': 'unk7',                 # Missing in old memdump
+    b'\x60\x07\x00': 'unk8',                 # Missing in old memdump
+}
+
+
+INT_TYPES = (
+    int,
+    ctypes.c_int8,
+    ctypes.c_int16,
+    ctypes.c_int32,
+    ctypes.c_int64,
+    ctypes.c_uint8,
+    ctypes.c_uint16,
+    ctypes.c_uint32,
+    ctypes.c_uint64,
+    )
+
 monofont = QFont()
 monofont.setStyleHint(QFont.Monospace)
 if not monofont.fixedPitch():
@@ -85,73 +163,11 @@ class DarkSoulsParameterEditor(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self, None)
 
-        #with open(filename, 'rb') as file1:
-            #MEM = file1.read()
         file1 = open(filename, 'rb')
         MEM = file1.read()
         MEMv = memoryview(MEM)
 
-        """
-        We use some magic numbers here to find the string data.
-        Horribly crude but it does the job.
-        """
         strings_re = re.compile(b"\x00\x00\x01\x00(...)\x00\x01\x00\x00\x00")
-        string_list_keys = {
-            b'\x60\x2F\x00': 'Goods Names',
-            b'\xF0\xD7\x06': 'Weapon Names',
-            b'\x24\x14\x01': 'Protector Names',
-            b'\xC8\x07\x00': 'Acc. Names',
-            b'\x2C\x10\x00': 'Magic Names',
-            b'\x2C\x07\x00': 'NPC Names',
-            b'\x5C\x08\x00': 'Game Area Names',
-            b'\xB4\x4B\x00': 'Tooltips',
-            b'\xC8\xAA\x00': 'Weapon Types',
-            b'\x14\x0B\x00': 'Acc. Tooltips',
-            b'\xEC\xAD\x01': 'Goods Desc.',
-            b'\x00\x4A\x09': 'Weapon Desc.',
-            b'\x88\x7E\x01': 'Protector Desc.',
-            b'\x6C\x48\x00': 'Acc. Desc.',
-            b'\x1C\x19\x00': 'Magic Tooltips',
-            b'\xB0\x7A\x00': 'Magic Desc.',          # Missing in old memdump
-            b'\xDC\xC8\x03': 'Subtitles',
-            b'\x60\x35\x00': 'Signs',
-            b'\xCC\x0B\x00': 'Intro Subs',
-            b'\x48\x6B\x00': 'UI Messages',
-            b'\xF4\x07\x00': 'UI Labels',
-            b'\xA0\x89\x00': 'Misc. Tooltips',       # Missing in old memdump
-            b'\x60\x56\x00': 'Character Creation',
-            b'\x80\x27\x00': 'UI Messages 2',
-            b'\x04\x47\x00': 'unk',
-            b'\x6C\x17\x00': 'UI Labels 2',
-            b'\xD4\x0C\x00': 'Moon',
-            b'\xE8\x02\x00': 'unk1',
-            b'\x10\x01\x00': 'unk2',                 # Missing in old memdump
-            b'\xC0\x49\x00': 'Main Menu',            # Missing in old memdump
-            b'\xEC\x48\x00': 'Goods Desc.',
-            b'\xA0\x1C\x00': 'Messages DLC',
-            b'\x84\x07\x00': 'unk3',                 # Missing in old memdump
-            b'\xD8\x04\x00': 'unk4',
-            b'\x24\x8E\x00': 'Subtitles DLC',
-            b'\xC0\x1B\x00': 'Magic Desc. DLC',
-            b'\xCC\x76\x00': 'Weapon Desc. DLC',
-            b'\x0C\x0A\x00': 'DLC Arena',
-            b'\x84\x2F\x00': 'Protector Desc. DLC',  # Missing in old memdump
-            b'\xCC\x03\x00': 'Acc. Desc. DLC',
-            b'\xF8\x04\x00': 'Goods Tooltips DLC',
-            b'\xA0\x03\x00': 'Goods Names DLC',
-            b'\x94\x00\x00': 'Acc. Tooltips DLC',
-            b'\x58\x00\x00': 'Acc. Names DLC',
-            b'\xC4\x12\x00': 'Weapon Types DLC',
-            b'\xC0\x39\x00': 'Weapon Names DLC',
-            #'unk5':        mks(b'\xD4\x01\x00', MAX_LEN=1024),  # Empty
-            b'\x78\x12\x00': 'Protector Names DLC',
-            b'\x18\x01\x00': 'Magic Names DLC',
-            b'\x2C\x01\x00': 'Boss Names DLC',
-            b'\x4C\x03\x00': 'Game Area Names DLC',
-            b'\x54\x07\x00': 'unk6',
-            b'\xA0\x07\x00': 'unk7',                 # Missing in old memdump
-            b'\x60\x07\x00': 'unk8',                 # Missing in old memdump
-        }
         string_lists = {}
         i = 0
         while i < len(MEMv)-16:
@@ -159,9 +175,9 @@ class DarkSoulsParameterEditor(QMainWindow):
             if not match:
                 break
             print('Strings match at 0x{:07x}'.format(match.start()+i))
-            if match.group(1) in string_list_keys:
+            if match.group(1) in STRING_LIST_KEYS:
                 result = make_strings(MEMv[i+match.start():])
-                string_lists[string_list_keys[match.group(1)]] = result[0]
+                string_lists[STRING_LIST_KEYS[match.group(1)]] = result[0]
                 i += result[1] + match.start()
                 print(result[1])
             else:
@@ -193,27 +209,49 @@ class DarkSoulsParameterEditor(QMainWindow):
         str_headers = ['ID', 'Offset', 'String']
 
         self.tabwidget = QTabWidget()
-        structs_tab = QTabWidget()
-        strings_tab = QTabWidget()
-        editor_tab = QTabWidget()
+        structs_tab = TreeWidgetSingle()
+        strings_tab = TreeWidgetSingle()
+        editor_tab = TreeWidgetSingle()
         self.tabwidget.addTab(structs_tab, "Structs")
         self.tabwidget.addTab(strings_tab, "Strings")
-        self.tabwidget.addTab(editor_tab, "Editors")
+        #self.tabwidget.addTab(editor_tab, "Editors")
+
+        self.stackedwidget = QStackedWidget()
+
+        def switch_widget(item, col):
+            if item:
+                self.stackedwidget.setCurrentIndex(item.data(col, QtCore.Qt.UserRole))
+
+        structs_tab.itemActivated.connect(switch_widget)
+        strings_tab.itemActivated.connect(switch_widget)
+        editor_tab.itemActivated.connect(switch_widget)
 
         #structs_tab.addTab(make_param_table(weapons, IDs=weapon_names), "Weapons")
         for name, lst in sorted(param_lists.items()):
             if len(lst) > 1:
-                sub_tab = QTabWidget()
-                structs_tab.addTab(sub_tab, name)
+                folder = QTreeWidgetItem([name])
+                structs_tab.addTopLevelItem(folder)
                 for i, sub in enumerate(lst):
-                    sub_tab.addTab(make_param_table(sub), str(i))
+                    index = self.stackedwidget.addWidget(make_param_table(sub))
+                    widget = QTreeWidgetItem([str(i)])
+                    widget.setData(0, QtCore.Qt.UserRole, index)
+                    folder.addChild(widget)
             else:
-                structs_tab.addTab(make_param_table(lst[0]), name)
+                index = self.stackedwidget.addWidget(make_param_table(lst[0]))
+                widget = QTreeWidgetItem([name])
+                widget.setData(0, QtCore.Qt.UserRole, index)
+                structs_tab.addTopLevelItem(widget)
         for name, lst in sorted(string_lists.items()):
-            strings_tab.addTab(make_table(str_headers, lst), name)
+            index = self.stackedwidget.addWidget(make_table(str_headers, lst))
+            widget = QTreeWidgetItem([name])
+            widget.setData(0, QtCore.Qt.UserRole, index)
+            strings_tab.addTopLevelItem(widget)
 
         layout = QHBoxLayout()
         layout.addWidget(self.tabwidget)
+        layout.addWidget(self.stackedwidget)
+        layout.setStretch(0, 0)
+        layout.setStretch(1, 1)
         self.main_widget = QWidget(self)
         self.main_widget.setLayout(layout)
         self.main_widget.setMinimumSize(800, 600)
@@ -324,19 +362,6 @@ def make_table(headers, items, sortable=False, row_labels=True, scale=2):
     return table
 
 
-INT_TYPES = (
-    int,
-    ctypes.c_int8,
-    ctypes.c_int16,
-    ctypes.c_int32,
-    ctypes.c_int64,
-    ctypes.c_uint8,
-    ctypes.c_uint16,
-    ctypes.c_uint32,
-    ctypes.c_uint64,
-    )
-
-
 def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
     """
     Helper function to tabulate 2d lists
@@ -392,6 +417,15 @@ def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
         table.setSortingEnabled(True)
         table.sortItems(0)
     return table
+
+
+def TreeWidgetSingle():
+    widget = QTreeWidget()
+    widget.setColumnCount(1)
+    widget.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+    widget.header().setStretchLastSection(False)
+    widget.header().close()
+    return widget
 
 
 def main():
