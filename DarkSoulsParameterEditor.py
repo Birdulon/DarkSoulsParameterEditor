@@ -232,12 +232,14 @@ class DarkSoulsParameterEditor(QMainWindow):
                 folder = QTreeWidgetItem([name])
                 structs_tab.addTopLevelItem(folder)
                 for i, sub in enumerate(lst):
-                    index = self.stackedwidget.addWidget(make_param_table(sub))
+                    #index = self.stackedwidget.addWidget(make_param_table(sub))
+                    index = self.stackedwidget.addWidget(DeferredTable(sub))
                     widget = QTreeWidgetItem([str(i)])
                     widget.setData(0, QtCore.Qt.UserRole, index)
                     folder.addChild(widget)
             else:
-                index = self.stackedwidget.addWidget(make_param_table(lst[0]))
+                #index = self.stackedwidget.addWidget(make_param_table(lst[0]))
+                index = self.stackedwidget.addWidget(DeferredTable(lst[0]))
                 widget = QTreeWidgetItem([name])
                 widget.setData(0, QtCore.Qt.UserRole, index)
                 structs_tab.addTopLevelItem(widget)
@@ -362,6 +364,27 @@ def make_table(headers, items, sortable=False, row_labels=True, scale=2):
     return table
 
 
+class DeferredTable(QWidget):
+    """
+    Generate a table only when shown
+    """
+    def __init__(self, *args):
+        super().__init__()
+        self.generate_args = args
+
+    def make_table(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(make_param_table(*self.generate_args))
+        self.setLayout(layout)
+        self.generate_args = False
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.generate_args:
+            self.make_table()
+
+
 def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
     """
     Helper function to tabulate 2d lists
@@ -422,7 +445,10 @@ def make_param_table(items, IDs=None, sortable=True, row_labels=True, scale=2):
 def TreeWidgetSingle():
     widget = QTreeWidget()
     widget.setColumnCount(1)
-    widget.header().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+    if pyqt_version == 4:
+        widget.header().setResizeMode(QHeaderView.ResizeToContents)
+    else:
+        widget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
     widget.header().setStretchLastSection(False)
     widget.header().close()
     return widget
